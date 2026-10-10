@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Base</title>
+<style>
+  :root {
+    --bg: #eef2f6;
+    --band: #12344d;
+    --ink: #12344d;
+    --text: #16212b;
+    --muted: #55677a;
+    --accent: #e8a317;
+    --line: #cdd8e3;
+    --bad: #b3261e;
+    --ok: #17794a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; min-height: 100vh; }
+  .band { background: var(--band); color: #fff; padding: 22px 18px 20px; }
+  .band-in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 26px; font-weight: 700; letter-spacing: .3px; }
+  .sub { font-size: 14px; opacity: .8; margin-top: 2px; }
+  main { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+  .panel { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 20px 18px; }
+  .panel h2 { margin: 0 0 6px; font-size: 20px; font-family: Georgia, serif; color: var(--ink); }
+  p { line-height: 1.5; margin: 8px 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 14px 0 6px; }
+  input[type="password"], input[type="text"], textarea {
+    width: 100%; font: inherit; font-size: 18px; padding: 11px 12px; border: 2px solid var(--line);
+    border-radius: 8px; background: #fff; color: var(--text);
+  }
+  textarea { font-size: 15px; line-height: 1.5; min-height: 230px; font-family: ui-monospace, Menlo, Consolas, monospace; resize: vertical; }
+  textarea.out { min-height: 120px; font-size: 12px; word-break: break-all; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .btn { font: inherit; font-size: 17px; font-weight: 600; border-radius: 8px; padding: 12px 16px; cursor: pointer; border: 2px solid var(--ink); }
+  .btn.primary { background: var(--ink); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn.small { font-size: 14px; padding: 7px 12px; font-weight: 500; }
+  .band .btn.ghost { color: #fff; border-color: rgba(255,255,255,.6); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .row .btn { flex: 1 1 auto; }
+  .msg { margin-top: 12px; font-size: 15px; min-height: 20px; }
+  .msg.bad { color: var(--bad); } .msg.ok { color: var(--ok); }
+  .group { margin-top: 22px; }
+  .group h3 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); }
+  a.link { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff; border: 1.5px solid var(--line); border-left: 6px solid var(--accent); border-radius: 10px; padding: 15px 14px; margin-bottom: 9px; color: var(--ink); text-decoration: none; font-size: 18px; font-weight: 600; }
+  a.link span.arrow { color: var(--muted); font-weight: 400; }
+  a.link small { display: block; font-weight: 400; font-size: 12px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+  .steps { padding-left: 20px; line-height: 1.55; font-size: 15px; }
+  .hidden { display: none !important; }
+  code { background: #eef2f6; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="band"><div class="band-in">
+  <div><h1>Base</h1><div class="sub" id="sub">Cofre de links</div></div>
+  <div id="bandBtns"></div>
+</div></div>
+
+<main>
+  <!-- carregando -->
+  <section id="vLoading" class="panel"><p class="muted">Carregando…</p></section>
+
+  <!-- tela de senha -->
+  <section id="vLock" class="panel hidden">
+    <h2>Digite a senha</h2>
+    <p class="muted">Os links só aparecem depois de destrancar.</p>
+    <label for="pw">Senha</label>
+    <input type="password" id="pw" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+    <div class="msg" id="lockMsg" role="alert"></div>
+    <div class="row"><button class="btn primary" id="unlockBtn" type="button">Entrar</button></div>
+  </section>
+
+  <!-- links -->
+  <section id="vHub" class="hidden"></section>
+
+  <!-- editor / criação -->
+  <section id="vEdit" class="panel hidden">
+    <h2 id="editTitle">Seus links</h2>
+    <p class="muted">Uma linha por link: <code>Título | endereço</code>. Para criar um grupo, comece a linha com <code>#</code>.</p>
+    <textarea id="editText" spellcheck="false" autocapitalize="off"></textarea>
+
+    <label for="newPw" id="newPwLabel">Senha do cofre (mínimo 10 caracteres)</label>
+    <input type="password" id="newPw" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+    <label for="newPw2">Repita a senha</label>
+    <input type="password" id="newPw2" autocomplete="new-password" autocapitalize="off" spellcheck="false">
+    <div class="msg" id="editMsg" role="alert"></div>
+    <div class="row">
+      <button class="btn ghost" id="cancelEdit" type="button">Cancelar</button>
+      <button class="btn primary" id="makeBtn" type="button">Gerar cofre</button>
+    </div>
+
+    <div id="result" class="hidden">
+      <h2 style="margin-top:22px">Pronto. Agora salve no GitHub</h2>
+      <textarea class="out" id="outText" readonly></textarea>
+      <div class="row">
+        <button class="btn ghost" id="copyBtn" type="button">Copiar texto</button>
+        <button class="btn ghost" id="dlBtn" type="button">Baixar arquivo</button>
+      </div>
+      <ol class="steps">
+        <li>No GitHub, abra o repositório desta página.</li>
+        <li>Toque em <b>Add file → Create new file</b>.</li>
+        <li>No nome, escreva exatamente <code>links.enc.json</code>.</li>
+        <li>Cole o texto copiado no conteúdo.</li>
+        <li>Toque em <b>Commit changes</b>. Se o arquivo já existir, abra ele, toque no lápis (Edit), troque o conteúdo e faça o commit.</li>
+        <li>Espere 1 a 2 minutos e recarregue esta página.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<script>
+// ================= criptografia =================
+const ITER = 310000;
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64 = u8 => btoa(String.fromCharCode(...u8));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function deriveKey(pw, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptData(obj, pw) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(pw, salt, ITER);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(JSON.stringify(obj)));
+  return JSON.stringify({ v: 1, iter: ITER, salt: b64(salt), iv: b64(iv), data: b64(new Uint8Array(ct)) });
+}
+async function decryptData(blobText, pw) {
+  const b = JSON.parse(blobText);
+  const key = await deriveKey(pw, unb64(b.salt), b.iter);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(b.iv) }, key, unb64(b.data));
+  return JSON.parse(dec.decode(pt));
+}
+
+// ================= texto <-> dados =================
+function parseText(text) {
+  const groups = []; const errors = [];
+  let cur = null;
+  text.split('\n').forEach((raw, i) => {
+    const line = raw.trim();
+    if (!line) return;
+    if (line.startsWith('#')) { cur = { g: line.replace(/^#+\s*/, '') || 'Links', items: [] }; groups.push(cur); return; }
+    const k = line.indexOf('|');
+    if (k < 0) { errors.push(`Linha ${i + 1}: falta o símbolo | entre título e endereço.`); return; }
+    const t = line.slice(0, k).trim();
+    let u = line.slice(k + 1).trim();
+    if (!t || !u) { errors.push(`Linha ${i + 1}: título ou endereço vazio.`); return; }
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
+    try {
+      const p = new URL(u);
+      if (p.protocol !== 'https:' && p.protocol !== 'http:') throw 0;
+    } catch (e) { errors.push(`Linha ${i + 1}: endereço inválido.`); return; }
+    if (!cur) { cur = { g: 'Links', items: [] }; groups.push(cur); }
+    cur.items.push({ t, u });
+  });
+  const clean = groups.filter(g => g.items.length);
+  if (!clean.length && !errors.length) errors.push('Adicione pelo menos um link.');
+  return { groups: clean, errors };
+}
+function toText(groups) {
+  return groups.map(g => `# ${g.g}\n` + g.items.map(i => `${i.t} | ${i.u}`).join('\n')).join('\n\n');
+}
+const TEMPLATE = `# Comunicação
+WhatsApp Web | https://web.whatsapp.com
+Gmail | https://mail.google.com
+
+# Estudo
+Treino de unidades | https://steverotowey.github.io/Unidades/
+Google Drive | https://drive.google.com
+
+# Outros
+YouTube | https://www.youtube.com`;
+
+// ================= interface =================
+const $ = id => document.getElementById(id);
+const views = ['vLoading', 'vLock', 'vHub', 'vEdit'];
+function show(id) { views.forEach(v => $(v).classList.toggle('hidden', v !== id)); }
+let blobText = null, groupsData = null, sessionPw = null;
+
+function setBandButtons(list) {
+  const box = $('bandBtns'); box.innerHTML = '';
+  list.forEach(([label, fn]) => {
+    const b = document.createElement('button');
+    b.className = 'btn ghost small'; b.type = 'button'; b.textContent = label; b.onclick = fn;
+    box.appendChild(b);
+  });
+}
+
+function renderHub() {
+  const hub = $('vHub'); hub.innerHTML = '';
+  groupsData.forEach(g => {
+    const wrap = document.createElement('div'); wrap.className = 'group';
+    const h = document.createElement('h3'); h.textContent = g.g; wrap.appendChild(h);
+    g.items.forEach(it => {
+      const a = document.createElement('a');
+      a.className = 'link'; a.href = it.u; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      const left = document.createElement('div'); left.textContent = it.t;
+      const sm = document.createElement('small'); try { sm.textContent = new URL(it.u).host; } catch (e) {}
+      left.appendChild(sm);
+      const ar = document.createElement('span'); ar.className = 'arrow'; ar.textContent = '↗';
+      a.appendChild(left); a.appendChild(ar); wrap.appendChild(a);
+    });
+    hub.appendChild(wrap);
+  });
+  $('sub').textContent = 'Destrancado';
+  setBandButtons([['Editar', () => openEditor(false)], ['Trancar', lock]]);
+  show('vHub');
+}
+
+function lock() {
+  groupsData = null; sessionPw = null; $('pw').value = '';
+  $('sub').textContent = 'Cofre de links'; $('lockMsg').textContent = ''; $('lockMsg').className = 'msg';
+  setBandButtons([]); show('vLock'); $('pw').focus();
+}
+
+async function unlock() {
+  const pw = $('pw').value; const m = $('lockMsg');
+  if (!pw) return;
+  m.className = 'msg'; m.textContent = 'Destrancando…';
+  try {
+    const data = await decryptData(blobText, pw);
+    groupsData = data.groups; sessionPw = pw; $('pw').value = '';
+    renderHub();
+  } catch (e) {
+    m.className = 'msg bad'; m.textContent = 'Senha incorreta.';
+  }
+}
+
+function openEditor(first) {
+  $('editTitle').textContent = first ? 'Criar seu cofre' : 'Editar links';
+  $('editText').value = first ? TEMPLATE : toText(groupsData);
+  $('newPwLabel').textContent = first ? 'Senha do cofre (mínimo 10 caracteres)' : 'Nova senha (deixe em branco para manter a atual)';
+  $('newPw').value = ''; $('newPw2').value = '';
+  $('editMsg').textContent = ''; $('editMsg').className = 'msg';
+  $('result').classList.add('hidden');
+  editFirst = first;
+  setBandButtons([]);
+  show('vEdit');
+}
+let editFirst = false;
+
+async function makeVault() {
+  const m = $('editMsg'); m.className = 'msg bad'; m.textContent = '';
+  const { groups, errors } = parseText($('editText').value);
+  if (errors.length) { m.textContent = errors.slice(0, 3).join(' '); return; }
+  let pw = $('newPw').value;
+  if (!pw && !editFirst && sessionPw) pw = sessionPw;
+  else {
+    if (pw.length < 10) { m.textContent = 'A senha precisa ter pelo menos 10 caracteres. Use uma frase com 4 ou 5 palavras.'; return; }
+    if (pw !== $('newPw2').value) { m.textContent = 'As duas senhas são diferentes.'; return; }
+  }
+  m.className = 'msg'; m.textContent = 'Criptografando…';
+  try {
+    const out = await encryptData({ groups }, pw);
+    $('outText').value = out;
+    $('result').classList.remove('hidden');
+    m.className = 'msg ok'; m.textContent = 'Cofre gerado.';
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) { m.className = 'msg bad'; m.textContent = 'Não consegui criptografar neste navegador.'; }
+}
+
+async function copyOut() {
+  const t = $('outText');
+  try { await navigator.clipboard.writeText(t.value); }
+  catch (e) { t.select(); document.execCommand('copy'); }
+  $('copyBtn').textContent = 'Copiado';
+  setTimeout(() => $('copyBtn').textContent = 'Copiar texto', 1800);
+}
+function downloadOut() {
+  const blob = new Blob([$('outText').value], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'links.enc.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+$('unlockBtn').onclick = unlock;
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
+$('makeBtn').onclick = makeVault;
+$('copyBtn').onclick = copyOut;
+$('dlBtn').onclick = downloadOut;
+$('cancelEdit').onclick = () => { if (groupsData) renderHub(); else if (blobText) lock(); else openEditor(true); };
+
+// ================= início =================
+(async function init() {
+  if (!window.crypto || !crypto.subtle) {
+    $('vLoading').innerHTML = '<p>Este navegador não tem criptografia disponível. Abra pelo endereço https:// do site.</p>';
+    return;
+  }
+  try {
+    const r = await fetch('links.enc.json?' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('sem arquivo');
+    blobText = await r.text();
+    JSON.parse(blobText);
+    lock();
+  } catch (e) {
+    blobText = null;
+    openEditor(true);
+  }
+})();
+</script>
+</body>
+</html>
